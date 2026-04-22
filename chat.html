@@ -172,6 +172,21 @@
         .suggested-q:hover {
             background: var(--accent-glow);
         }
+
+        /* Typing Dots Animation */
+        .typing-dots {
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .bot-message strong {
+            color: #ef4444; /* Error red if needed */
+        }
     </style>
 </head>
 
@@ -246,7 +261,7 @@
             typingIndicator.classList.add('active');
 
             // Create placeholder for bot response
-            const botMessageDiv = addMessage('', false);
+            const botMessageDiv = addMessage('<span class="typing-dots">...</span>', false);
             let fullResponse = '';
 
             try {
@@ -258,25 +273,44 @@
 
                 if (!response.ok) throw new Error('Failed to connect to AI');
 
-                // Read the stream
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
+                
+                // Remove typing indicator once we start receiving
                 typingIndicator.classList.remove('active');
+                
+                let isFirstChunk = true;
 
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
                     
                     const chunk = decoder.decode(value);
-                    // The Vercel AI SDK DataStream format prefixes chunks (e.g., '0:"hello"')
-                    // For a simple implementation, we can parse the common text chunk '0:'
                     const parts = chunk.split('\n');
+                    
                     for (const part of parts) {
+                        if (part.trim() === '') continue;
+                        
+                        // Parse Vercel AI SDK stream format (e.g., 0:"hello")
                         if (part.startsWith('0:')) {
-                            const text = part.slice(3, -1).replace(/\\n/g, '\n').replace(/\\"/g, '"');
-                            fullResponse += text;
-                            botMessageDiv.textContent = fullResponse; // Use textContent for safety during streaming
-                            chatContainer.scrollTop = chatContainer.scrollHeight;
+                            try {
+                                // Extract the string between the first and last quotes
+                                const textContent = part.slice(3, -1)
+                                    .replace(/\\n/g, '\n')
+                                    .replace(/\\"/g, '"')
+                                    .replace(/\\\\/g, '\\');
+                                
+                                if (isFirstChunk) {
+                                    botMessageDiv.textContent = ''; // Clear the dots
+                                    isFirstChunk = false;
+                                }
+                                
+                                fullResponse += textContent;
+                                botMessageDiv.textContent = fullResponse;
+                                chatContainer.scrollTop = chatContainer.scrollHeight;
+                            } catch (e) {
+                                console.error('Error parsing chunk:', e);
+                            }
                         }
                     }
                 }
@@ -285,7 +319,7 @@
 
             } catch (error) {
                 console.error(error);
-                botMessageDiv.innerHTML = "Sorry, I'm having trouble connecting right now. Please try again later.";
+                botMessageDiv.innerHTML = "<strong>Error:</strong> I'm having trouble connecting to the brain. Please check your connection or API key.";
                 typingIndicator.classList.remove('active');
             }
         }
