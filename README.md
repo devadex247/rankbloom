@@ -21,7 +21,7 @@ RankBloom is a high-performance, aesthetically driven web agency focused on help
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/sadtuk28/rankbloom.git
+   git clone https://github.com/devadex247/rankbloom.git
    ```
 
 2. **Install dependencies**
