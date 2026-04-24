@@ -2,7 +2,7 @@
 
 RankBloom is a high-performance, aesthetically driven web agency focused on helping small businesses scale through fast, SEO-optimized, and mobile-ready websites.
 
-![Project Preview](public/videos/business_district_2.png)
+![Project Preview](https://github.com/devadex247/aiadebayo-co.git)
 
 ## 🚀 Technlogy Stack
 - **Frontend:** Vanilla HTML5, CSS3 (Modern Flex/Grid), JavaScript (ES6+)
